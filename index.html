@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Reporting Multiprojet</title>
+<style>
+:root {
+  --navy:#00313F; --bordeaux:#620038; --bleu:#009ECB; --orange:#FF8200;
+  --gray7:#6B625D; --grayL:#D4CDC6; --noir:#1A1A1A; --bg:#F4F2F0; --white:#FFFFFF;
+  --r-bg:#FCEBEB; --r-dot:#E24B4A; --r-txt:#A32D2D; --r-brd:#F7C1C1;
+  --o-bg:#FFF3DC; --o-dot:#EF9F27; --o-txt:#854F0B; --o-brd:#FAC775;
+  --v-bg:#EAF3DE; --v-dot:#639922; --v-txt:#3B6D11; --v-brd:#C0DD97;
+  --border:#E2DDD9; --radius:10px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--noir);font-size:14px;line-height:1.6}
+.hidden{display:none !important}
+
+.topbar{background:var(--navy);padding:14px 30px;color:#fff;font-weight:700;letter-spacing:.05em;font-size:13px}
+
+.container{max-width:820px;margin:0 auto;padding:36px 24px}
+h1{font-size:20px;color:var(--navy);margin-bottom:18px}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--navy);margin:26px 0 10px;padding-left:9px;border-left:3px solid var(--orange)}
+
+.field-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px}
+input,textarea{font-family:inherit;font-size:13px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;width:100%;background:#fff}
+textarea{resize:vertical;margin-bottom:14px}
+button{font-family:inherit;font-size:13px;font-weight:700;padding:11px 20px;border:none;border-radius:8px;background:var(--orange);color:#fff;cursor:pointer}
+button:hover{opacity:.92}
+button.secondary{background:transparent;color:var(--navy);border:1px solid var(--border);font-weight:600}
+
+#loading{margin-top:12px;color:var(--gray7);font-size:13px}
+.error{margin-top:12px;background:var(--r-bg);border:1px solid var(--r-brd);color:var(--r-txt);padding:10px 14px;border-radius:8px;font-size:12px;white-space:pre-wrap}
+
+/* ---- RAPPORT ---- */
+.hero{background:var(--navy);padding:24px 30px;color:#fff;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px}
+.hero-title{font-size:20px;font-weight:700}
+.hero-sub{font-size:12px;color:var(--grayL);margin-top:3px}
+
+.rag{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:12px;font-size:11px;font-weight:700}
+.rag-dot{width:7px;height:7px;border-radius:50%}
+.rag-r{background:var(--r-bg);color:var(--r-txt)}.rag-r .rag-dot{background:var(--r-dot)}
+.rag-o{background:var(--o-bg);color:var(--o-txt)}.rag-o .rag-dot{background:var(--o-dot)}
+.rag-v{background:var(--v-bg);color:var(--v-txt)}.rag-v .rag-dot{background:var(--v-dot)}
+
+.meteo-banner{margin:24px auto 0;max-width:820px;padding:0 24px}
+.meteo-inner{display:flex;align-items:center;gap:12px;padding:13px 16px;border-radius:var(--radius);border:1px solid var(--border)}
+.meteo-dot{width:14px;height:14px;border-radius:50%}
+.meteo-lbl{font-weight:700}
+.meteo-detail{font-size:12px;color:var(--gray7)}
+
+.kpi-grid{max-width:820px;margin:14px auto 0;padding:0 24px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.kpi{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px}
+.kpi-label{font-size:9px;text-transform:uppercase;color:var(--gray7);font-weight:700}
+.kpi-val{font-size:20px;font-weight:800;color:var(--navy)}
+
+.wrap{max-width:820px;margin:0 auto;padding:0 24px 60px}
+
+.db-table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.db-table th{text-align:left;font-size:9px;text-transform:uppercase;color:var(--gray7);background:var(--bg);padding:9px 12px}
+.db-table td{padding:10px 12px;border-top:1px solid var(--border);font-size:12px;vertical-align:top}
+
+.alert-item,.dec-item{display:flex;gap:9px;padding:10px 13px;border-radius:var(--radius);font-size:12px;margin-bottom:7px}
+.alert-item{background:var(--r-bg);border:1px solid var(--r-brd)}
+.dec-item{background:#fff;border:1px solid var(--border)}
+.badge-num{font-weight:800;flex-shrink:0}
+
+.fiche{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px}
+.fiche-hdr{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.fiche-nom{font-weight:700;color:var(--navy);font-size:14px}
+.chip{font-size:10px;color:var(--gray7);padding:2px 7px;border-radius:5px;background:var(--bg);border:1px solid var(--border)}
+.kv{margin-bottom:6px;font-size:12.5px}
+.kv label{display:block;font-size:9px;text-transform:uppercase;color:var(--gray7);font-weight:700;margin-bottom:1px}
+.contradiction{background:#FFF3CD;color:#A32D2D;padding:1px 4px;border-radius:3px}
+</style>
+</head>
+<body>
+
+<div class="topbar">AGENT REPORTING MULTIPROJET — Usage interne</div>
+
+<section id="form-view" class="container">
+  <h1>Générer un rapport de pilotage</h1>
+  <div class="field-row">
+    <input id="f-client" placeholder="Client (ex: BNP)">
+    <input id="f-mission" placeholder="Mission (ex: Transfo RH)">
+    <input id="f-date" placeholder="Période (ex: juin 2026)">
+  </div>
+  <textarea id="f-data" rows="14" placeholder="Colle ici toutes tes données projets, sans te soucier du format : notes, tableau Excel copié-collé, export Jira/Monday/Asana/Notion, emails, comptes-rendus..."></textarea>
+  <button id="btn-generate">Générer le rapport</button>
+  <div id="loading" class="hidden">Génération en cours (10 à 20 secondes)...</div>
+  <div id="error-box" class="hidden error"></div>
+</section>
+
+<section id="report-view" class="hidden">
+  <div class="hero">
+    <div>
+      <div class="hero-title" id="r-title"></div>
+      <div class="hero-sub" id="r-period"></div>
+    </div>
+    <button class="secondary" id="btn-reset" style="background:#fff">← Nouveau rapport</button>
+  </div>
+
+  <div class="meteo-banner"><div class="meteo-inner" id="r-meteo"></div></div>
+  <div class="kpi-grid" id="r-kpis"></div>
+
+  <div class="wrap">
+    <h2>Tableau de bord</h2>
+    <table class="db-table">
+      <thead><tr><th>Projet</th><th>Responsable</th><th>Statut</th><th>Avancement</th><th>Jalon suivant</th></tr></thead>
+      <tbody id="db-body"></tbody>
+    </table>
+
+    <h2>Alertes</h2>
+    <div id="alert-list"></div>
+
+    <h2>Décisions à prendre</h2>
+    <div id="dec-list"></div>
+
+    <h2>Fiches projets</h2>
+    <div id="fiches"></div>
+  </div>
+</section>
+
+<script>
+const RC = { r: "#E24B4A", o: "#EF9F27", v: "#639922" };
+const RL = { r: "Rouge", o: "Orange", v: "Vert" };
+
+function esc(s) {
+  if (s === null || s === undefined) return "Non renseigné";
+  return String(s);
+}
+function highlightContradiction(s) {
+  return esc(s).replace(/⚠ CONTRADICTION\s*:\s*(.*)/i, '<span class="contradiction">⚠ Contradiction : $1</span>');
+}
+function ragBadge(r) {
+  return `<span class="rag rag-${r}"><span class="rag-dot"></span>${RL[r] || "Orange"}</span>`;
+}
+
+document.getElementById("btn-generate").addEventListener("click", async () => {
+  const client = document.getElementById("f-client").value.trim();
+  const mission = document.getElementById("f-mission").value.trim();
+  const date = document.getElementById("f-date").value.trim();
+  const rawText = document.getElementById("f-data").value.trim();
+  const errorBox = document.getElementById("error-box");
+  const loading = document.getElementById("loading");
+
+  errorBox.classList.add("hidden");
+
+  if (!client || !mission || !date || !rawText) {
+    errorBox.textContent = "Merci de renseigner Client, Mission, Période et de coller au moins quelques données projet.";
+    errorBox.classList.remove("hidden");
+    return;
+  }
+
+  loading.classList.remove("hidden");
+
+  try {
+    const res = await fetch("/.netlify/functions/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ client, mission, date, rawText }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Erreur inconnue");
+    renderReport(data);
+  } catch (e) {
+    errorBox.textContent = "Erreur : " + e.message;
+    errorBox.classList.remove("hidden");
+  } finally {
+    loading.classList.add("hidden");
+  }
+});
+
+document.getElementById("btn-reset").addEventListener("click", () => {
+  document.getElementById("report-view").classList.add("hidden");
+  document.getElementById("form-view").classList.remove("hidden");
+});
+
+function renderReport(data) {
+  const P = data.projects || [];
+  const alertes = data.alertes || [];
+  const decisions = data.decisions || [];
+
+  document.getElementById("r-title").textContent = `Rapport de pilotage — ${data.mission} | ${data.client}`;
+  document.getElementById("r-period").textContent = `Période : ${data.date}`;
+
+  // Météo globale
+  let meteo = "v";
+  if (P.some((p) => p.rag === "r")) meteo = "r";
+  else if (P.some((p) => p.rag === "o")) meteo = "o";
+  const meteoLabels = { r: "Rouge — points critiques à traiter", o: "Orange — vigilance requise", v: "Vert — dans les clous" };
+  document.getElementById("r-meteo").innerHTML = `
+    <div class="meteo-dot" style="background:${RC[meteo]}"></div>
+    <div><span class="meteo-lbl" style="color:${RC[meteo]}">${meteoLabels[meteo]}</span>
+    <div class="meteo-detail">${P.length} projet${P.length > 1 ? "s" : ""}</div></div>`;
+
+  // Avancement moyen
+  const pcts = P.map((p) => p.pct).filter((v) => typeof v === "number");
+  const avgPct = pcts.length ? Math.round(pcts.reduce((a, b) => a + b, 0) / pcts.length) : null;
+
+  // Budget global (en k€)
+  const alloues = P.map((p) => p.financier && p.financier.alloueK).filter((v) => typeof v === "number");
+  const consommes = P.map((p) => p.financier && p.financier.consommeK).filter((v) => typeof v === "number");
+  const budgetOk = alloues.length === P.length && consommes.length === P.length && P.length > 0;
+  const totalAlloue = alloues.reduce((a, b) => a + b, 0);
+  const totalConsomme = consommes.reduce((a, b) => a + b, 0);
+  const budgetPct = budgetOk && totalAlloue > 0 ? Math.round((totalConsomme / totalAlloue) * 100) : null;
+
+  document.getElementById("r-kpis").innerHTML = `
+    <div class="kpi"><div class="kpi-label">Avancement moyen</div><div class="kpi-val">${avgPct !== null ? avgPct + "%" : "Données insuffisantes"}</div></div>
+    <div class="kpi"><div class="kpi-label">Budget alloué</div><div class="kpi-val">${budgetOk ? totalAlloue + " k€" : "Données insuffisantes"}</div></div>
+    <div class="kpi"><div class="kpi-label">Consommé</div><div class="kpi-val">${budgetOk ? totalConsomme + " k€ (" + budgetPct + "%)" : "Données insuffisantes"}</div></div>`;
+
+  // Tableau de bord
+  document.getElementById("db-body").innerHTML = P.map((p) => `
+    <tr>
+      <td><strong>${esc(p.nom)}</strong><br><span style="color:var(--gray7);font-size:11px">${esc(p.phase)}</span></td>
+      <td style="color:var(--gray7)">${esc(p.resp)}</td>
+      <td>${ragBadge(p.rag)}</td>
+      <td>${p.pct !== null && p.pct !== undefined ? p.pct + "%" : "Non renseigné"}</td>
+      <td style="${p.jalonWarn ? "color:var(--r-txt);font-weight:700" : ""}">${p.jalonWarn ? "⚠ " : ""}${esc(p.jalon)}</td>
+    </tr>`).join("") || `<tr><td colspan="5" style="color:var(--gray7)">Aucun projet détecté.</td></tr>`;
+
+  // Alertes
+  document.getElementById("alert-list").innerHTML = alertes.length
+    ? alertes.map((a, i) => `<div class="alert-item"><span class="badge-num" style="color:var(--r-txt)">${i + 1}</span><span>${highlightContradiction(a)}</span></div>`).join("")
+    : `<p style="color:var(--gray7);font-size:12px">Aucune alerte sur cette période.</p>`;
+
+  // Décisions
+  document.getElementById("dec-list").innerHTML = decisions.length
+    ? decisions.map((d, i) => `<div class="dec-item"><span class="badge-num" style="color:var(--navy)">${i + 1}</span><span>${highlightContradiction(d)}</span></div>`).join("")
+    : `<p style="color:var(--gray7);font-size:12px">Aucune décision requise.</p>`;
+
+  // Fiches
+  document.getElementById("fiches").innerHTML = P.map((p) => `
+    <div class="fiche">
+      <div class="fiche-hdr">${ragBadge(p.rag)}<span class="fiche-nom">${esc(p.nom)}</span><span class="chip">${esc(p.resp)}</span><span class="chip">${esc(p.phase)}</span></div>
+      <div class="kv"><label>Avancement</label>${p.pct !== null && p.pct !== undefined ? p.pct + "%" : "Non renseigné"}</div>
+      <div class="kv"><label>Prochain jalon</label>${p.jalonWarn ? "⚠ " : ""}${highlightContradiction(p.jalon)}</div>
+      <div class="kv"><label>Budget</label>${p.financier && p.financier.alloueK !== null ? p.financier.alloueK + " k€ alloués, " + (p.financier.consommeK ?? "?") + " k€ consommés" : "Non renseigné"}${p.financier && p.financier.alert ? ' <span class="contradiction">⚠ Dépassement</span>' : ""}</div>
+      <div class="kv"><label>Risques</label>${(p.risques && p.risques.risques || []).map(highlightContradiction).join("<br>") || "Non renseigné"}</div>
+      <div class="kv"><label>Problèmes</label>${(p.risques && p.risques.problemes || []).map(highlightContradiction).join("<br>") || "Non renseigné"}</div>
+      <div class="kv"><label>Livrables réalisés</label>${(p.livrables && p.livrables.faits || []).join("<br>") || "Non renseigné"}</div>
+      <div class="kv"><label>Livrables à venir</label>${(p.livrables && p.livrables.avenir || []).join("<br>") || "Non renseigné"}</div>
+      <div class="kv"><label>Synthèse</label>${esc(p.synthese)}</div>
+      <div class="kv"><label>Actions</label>${(p.livrables && p.livrables.actions || []).map((a) => `→ ${esc(a.txt)} — ${esc(a.resp)}`).join("<br>") || "Non renseigné"}</div>
+    </div>`).join("");
+
+  document.getElementById("form-view").classList.add("hidden");
+  document.getElementById("report-view").classList.remove("hidden");
+}
+</script>
+</body>
+</html>
