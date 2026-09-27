@@ -4,6 +4,7 @@ import colors from '../../theme/colors';
 import { fonts, typography } from '../../theme/typography';
 import CTAButton from '../../components/CTAButton';
 // import auth from '@react-native-firebase/auth'; // décommenter une fois Firebase configuré
+// import firestore from '@react-native-firebase/firestore';
 
 export default function LoginScreen({ navigation }) {
   const [phone, setPhone] = useState('');
@@ -30,9 +31,11 @@ export default function LoginScreen({ navigation }) {
     setLoading(true);
     try {
       // await confirmResult.confirm(otp.join(''));
-      // TODO: vérifier si le profil famille existe déjà dans Firestore
-      // -> navigation.replace('ProfileSetup') si nouveau, sinon navigation.replace('Home')
-      navigation.replace('Home');
+      // const uid = auth().currentUser.uid;
+      // const profile = await firestore().collection('users').doc(uid).get();
+      // navigation.replace(profile.exists ? 'Home' : 'ProfileSetup');
+      // En attendant Firebase, on considère que c'est un nouveau compte :
+      navigation.replace('ProfileSetup');
     } catch (e) {
       console.warn('Code invalide', e);
     } finally {

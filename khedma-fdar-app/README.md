@@ -27,6 +27,7 @@ l'ordinateur).
 - `src/theme/` — couleurs et typographie (ne jamais coder une couleur en dur ailleurs)
 - `src/components/` — Badge de vérification, bouton CTA, carte prestataire
 - `src/screens/family/LoginScreen.js` — connexion OTP (logique Firebase en commentaire, à activer une fois le SDK installé)
+- `src/screens/family/ProfileSetupScreen.js` — création de profil famille (écriture Firestore en commentaire)
 - `src/screens/family/HomeScreen.js` — accueil/recherche avec données d'exemple
 - `src/navigation/AppNavigator.js` — squelette de navigation, à compléter écran par écran
 
