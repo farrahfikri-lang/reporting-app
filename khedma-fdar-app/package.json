@@ -1,0 +1,26 @@
+{
+  "name": "khedma-fdar-app",
+  "version": "0.1.0",
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios"
+  },
+  "dependencies": {
+    "expo": "~51.0.0",
+    "expo-status-bar": "~1.12.0",
+    "react": "18.2.0",
+    "react-native": "0.74.0",
+    "@react-navigation/native": "^6.1.0",
+    "@react-navigation/native-stack": "^6.9.0",
+    "react-native-screens": "~3.31.0",
+    "react-native-safe-area-context": "4.10.0",
+    "@react-native-firebase/app": "^20.0.0",
+    "@react-native-firebase/auth": "^20.0.0",
+    "@react-native-firebase/firestore": "^20.0.0",
+    "@expo-google-fonts/domine": "^0.2.3",
+    "@expo-google-fonts/ibm-plex-sans": "^0.2.3",
+    "expo-font": "~12.0.0"
+  }
+}
